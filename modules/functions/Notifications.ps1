@@ -430,7 +430,9 @@ function Send-AgregarrTrigger {
     param (
         [Parameter(Mandatory = $true)][string]$RatingKey,
         [Parameter(Mandatory = $true)][ValidateSet('movie', 'show')][string]$MediaType,
-        [string]$Title
+        [string]$Title,
+        [Nullable[int]]$SeasonNumber,
+        [Nullable[int]]$EpisodeNumber
     )
 
     if ($global:AgregarrTriggerEnabled -ne 'true') { return }
@@ -442,11 +444,14 @@ function Send-AgregarrTrigger {
 
     $triggerUrl = "$($global:AgregarrUrl)/api/v1/posterizarr/trigger"
     $headers = @{ 'X-Api-Key' = $global:AgregarrApiKey }
-    $body = @{
+    $bodyObject = @{
         ratingKey = $RatingKey
         mediaType = $MediaType
         title = $Title
-    } | ConvertTo-Json -Compress
+    }
+    if ($null -ne $SeasonNumber) { $bodyObject['seasonNumber'] = $SeasonNumber }
+    if ($null -ne $EpisodeNumber) { $bodyObject['episodeNumber'] = $EpisodeNumber }
+    $body = $bodyObject | ConvertTo-Json -Compress
 
     try {
         $response = Invoke-RestMethod -Method Post -Uri $triggerUrl -Headers $headers -Body $body -ContentType 'application/json' -TimeoutSec 15 -ErrorAction Stop

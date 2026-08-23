@@ -2014,7 +2014,7 @@
     },
     "agregarr": {
       "title": "Agregarr follow-up automation",
-      "description": "Notify Agregarr after Posterizarr successfully uploads an Arr-triggered movie or show poster to Plex.",
+      "description": "Notify Agregarr after Posterizarr successfully uploads Arr-triggered artwork to Plex, including the Sonarr season and episode.",
       "enabled": "Enabled",
       "disabled": "Disabled",
       "loading": "Loading Agregarr settings...",
@@ -2037,8 +2037,8 @@
       "workflowTitle": "What happens after a new item is imported",
       "workflow": [
         "Sonarr or Radarr triggers Posterizarr, which creates and uploads the selected poster to Plex.",
-        "Posterizarr sends the Plex rating key to Agregarr after Plex confirms the root poster upload.",
-        "Agregarr adds the item to matching collections first, then applies its configured overlays."
+        "Posterizarr sends the Plex rating key and, for Sonarr, the imported season and episode numbers after Plex confirms the root poster upload.",
+        "Agregarr adds the item to matching collections first, then applies Main, Season, and Episode-targeted overlay templates."
       ]
     },
     "setupSteps": "Setup Steps",

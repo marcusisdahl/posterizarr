@@ -2,7 +2,9 @@
 
 Posterizarr can notify Agregarr after an Arr-triggered movie or show poster has
 been successfully uploaded to Plex. Agregarr then checks that single Plex item,
-adds it to matching collections, and applies its configured overlays.
+adds it to matching collections, and applies its configured overlays. Sonarr
+callbacks also include the imported season and episode numbers, allowing
+Agregarr to update that season poster and episode title card.
 
 Open **Auto Triggers** in the Posterizarr Web UI, select **Agregarr**, and
 configure:
@@ -35,8 +37,15 @@ The callback is sent only when all of these conditions are met:
 - Plex integration is enabled.
 - A root movie or show poster was successfully uploaded to Plex.
 
-Background, season, episode, and title-card uploads do not trigger Agregarr. A
-callback failure is logged as a warning and does not make the completed
+Background, season, episode, and title-card uploads do not create extra
+callbacks. The one root callback carries Sonarr's season and episode numbers.
+In Agregarr, tag overlay templates with the desired artwork targets in the
+template editor: **Main poster**, **Season poster**, and/or **Episode card**.
+Existing templates default to Main poster. Episode templates should normally
+use a 1920x1080 canvas. Child artwork is updated only by Sonarr follow-up
+callbacks; a normal full-library overlay run remains main-poster-only.
+
+A callback failure is logged as a warning and does not make the completed
 Posterizarr run fail.
 
 The target Agregarr build must provide `POST /api/v1/posterizarr/trigger`. The

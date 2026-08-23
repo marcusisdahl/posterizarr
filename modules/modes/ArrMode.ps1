@@ -1392,9 +1392,23 @@
     ) {
         $agregarrMediaType = if ($arrplatform -eq 'Sonarr') { 'show' } else { 'movie' }
         $agregarrTitle = if ($arrplatform -eq 'Sonarr') { $seriesTitle } else { $movieTitle }
-        Send-AgregarrTrigger -RatingKey $queryKey -MediaType $agregarrMediaType -Title $agregarrTitle
+        $agregarrTrigger = @{
+            RatingKey = $queryKey
+            MediaType = $agregarrMediaType
+            Title = $agregarrTitle
+        }
+        if ($arrplatform -eq 'Sonarr') {
+            $parsedSeason = 0
+            $parsedEpisode = 0
+            if ([int]::TryParse([string]$seasonIndex, [ref]$parsedSeason)) {
+                $agregarrTrigger['SeasonNumber'] = $parsedSeason
+            }
+            if ([int]::TryParse([string]$episodeIndex, [ref]$parsedEpisode)) {
+                $agregarrTrigger['EpisodeNumber'] = $parsedEpisode
+            }
+        }
+        Send-AgregarrTrigger @agregarrTrigger
     }
-
 
 
 
