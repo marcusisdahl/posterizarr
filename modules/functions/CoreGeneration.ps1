@@ -720,6 +720,7 @@ function Invoke-MoviePosterCreation {
                                                     else {
                                                         Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                         Write-Entry -Subtext "$Titletext | Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                        $null = Increment-GlobalStat 'PlexRootPosterUploads'
                                                     }
                                                 }
                                                 catch {
@@ -848,6 +849,7 @@ function Invoke-MoviePosterCreation {
                                             else {
                                                 Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                 Write-Entry -Subtext "$Titletext | Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                $null = Increment-GlobalStat 'PlexRootPosterUploads'
                                             }
                                             $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                         }
@@ -2423,6 +2425,7 @@ function Invoke-ShowPosterCreation {
                                                 else {
                                                     Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                     Write-Entry -Subtext "$Titletext | Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                    $null = Increment-GlobalStat 'PlexRootPosterUploads'
                                                 }
                                             }
                                             catch {
@@ -2550,6 +2553,7 @@ function Invoke-ShowPosterCreation {
                                         else {
                                             Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                             Write-Entry -Subtext "$Titletext | Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                            $null = Increment-GlobalStat 'PlexRootPosterUploads'
                                         }
                                         $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                     }
@@ -6820,5 +6824,4 @@ function Invoke-TitleCardCreation {
         $global:errorCount = Increment-GlobalStat 'errorCount'
     }
 }
-
 

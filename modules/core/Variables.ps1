@@ -112,6 +112,7 @@ $global:tsMissMsBag = [System.Collections.Concurrent.ConcurrentBag[long]]::new()
 $global:runspaceStats = [hashtable]::Synchronized(@{
     errorCount = 0
     posterCount = 0
+    PlexRootPosterUploads = 0
     FallbackCount = 0
     PosterUnknownCount = 0
     TruncatedCount = 0
@@ -332,6 +333,9 @@ $global:languageDirections = @{
 
 # Plex Part
 $PlexUrl = $config.PlexPart.PlexUrl
+$global:AgregarrTriggerEnabled = "$($env:AGREGARR_TRIGGER_ENABLED)".ToLower()
+$global:AgregarrUrl = "$($env:AGREGARR_URL)".TrimEnd('/')
+$global:AgregarrApiKey = "$($env:AGREGARR_API_KEY)"
 $UsePlex = "$($config.PlexPart.UsePlex)".ToLower()
 if ($UsePlex -eq 'true') {
     $LibstoExclude = $config.PlexPart.LibstoExclude
