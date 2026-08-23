@@ -14119,6 +14119,7 @@ async def arr_webhook(request: Request):
             return {"success": True, "message": f"Ignored event type: {event_type}"}
 
         data_map = {}
+        trigger_maps = []
         platform = "Unknown"
 
         # Map JSON Data to Posterizarr Arguments (mimicking ArrTrigger.sh logic)
@@ -14142,6 +14143,8 @@ async def arr_webhook(request: Request):
                 data_map["arr_moviefile_path"] = movie_file.get("path", "")
                 data_map["arr_moviefile_id"] = movie_file.get("id", "")
 
+            trigger_maps.append(data_map)
+
         # SONARR
         elif "series" in payload:
             platform = "Sonarr"
@@ -14158,43 +14161,57 @@ async def arr_webhook(request: Request):
             if "imdbId" in series:
                 data_map["arr_series_imdb"] = series.get("imdbId")
 
-            # Handle Episode Data
+            # Queue every episode represented by this Sonarr event. Multi-episode
+            # files legitimately contain more than one entry here; keeping only
+            # the first silently skipped the remaining title cards and callbacks.
             if episodes:
-                first_ep = episodes[0]
-                data_map["arr_episode_season"] = first_ep.get("seasonNumber", "")
-                data_map["arr_episode_numbers"] = first_ep.get("episodeNumber", "")
-                data_map["arr_episode_titles"] = first_ep.get("title", "")
+                for episode in episodes:
+                    episode_map = dict(data_map)
+                    episode_map["arr_episode_season"] = episode.get("seasonNumber", "")
+                    episode_map["arr_episode_numbers"] = episode.get("episodeNumber", "")
+                    episode_map["arr_episode_titles"] = episode.get("title", "")
 
-                # If there's an episode file payload
+                    # A multi-episode file shares this path across its episodes.
+                    if "episodeFile" in payload:
+                        episode_map["arr_episode_path"] = payload["episodeFile"].get("path", "")
+                    trigger_maps.append(episode_map)
+            else:
                 if "episodeFile" in payload:
                     data_map["arr_episode_path"] = payload["episodeFile"].get("path", "")
+                trigger_maps.append(data_map)
 
         else:
             logger.warning(f"Unknown payload format received: {payload.keys()}")
             raise HTTPException(status_code=400, detail="Unknown payload format")
 
-        # 3. Write the .posterizarr file
+        # 3. Write one .posterizarr file per movie/episode job
         watcher_dir = BASE_DIR / "watcher"
         watcher_dir.mkdir(parents=True, exist_ok=True)
 
-        # Create unique filename timestamp_random.posterizarr
-        # The prefix "recently_added_" is used by Start.ps1 to calculate delay times
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3]
-        rand_str = os.urandom(3).hex()
-        filename = f"recently_added_{timestamp}_{rand_str}.posterizarr"
-        file_path = watcher_dir / filename
+        created_files = []
+        for trigger_index, trigger_map in enumerate(trigger_maps):
+            # The prefix "recently_added_" is used by Start.ps1 to calculate delay times.
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3]
+            rand_str = os.urandom(3).hex()
+            filename = (
+                f"recently_added_{timestamp}_{trigger_index:03d}_{rand_str}.posterizarr"
+            )
+            file_path = watcher_dir / filename
 
-        logger.info(f"Creating Arr trigger file for {platform}: {file_path}")
+            logger.info(f"Creating Arr trigger file for {platform}: {file_path}")
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            for key, value in data_map.items():
-                # Write in the format: [key]: value
-                f.write(f"[{key}]: {value}\n")
+            with open(file_path, "w", encoding="utf-8") as f:
+                for key, value in trigger_map.items():
+                    # Write in the format: [key]: value
+                    f.write(f"[{key}]: {value}\n")
+            created_files.append(str(file_path))
 
         return {
             "success": True,
-            "message": f"Trigger queued for {platform}",
-            "file": str(file_path)
+            "message": f"{len(created_files)} trigger job(s) queued for {platform}",
+            "file": created_files[0] if created_files else None,
+            "files": created_files,
+            "queued": len(created_files),
         }
 
     except Exception as e:

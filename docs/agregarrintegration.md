@@ -43,6 +43,8 @@ even when that job uploaded a root poster, season poster, and title card. For a
 large Sonarr import, jobs remain individual so every successfully finished
 episode has its own retryable callback; Agregarr serializes those callbacks.
 The callback carries Sonarr's season and episode numbers.
+When Sonarr sends a multi-episode file in one webhook, Posterizarr expands its
+`episodes` array into one queued job per episode before processing begins.
 In Agregarr, tag overlay templates with the desired artwork targets in the
 template editor: **Main poster**, **Season poster**, and/or **Episode card**.
 Existing templates default to Main poster. Episode templates should normally
