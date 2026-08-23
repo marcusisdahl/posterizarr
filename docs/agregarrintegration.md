@@ -4,7 +4,18 @@ Posterizarr can notify Agregarr after an Arr-triggered movie or show poster has
 been successfully uploaded to Plex. Agregarr then checks that single Plex item,
 adds it to matching collections, and applies its configured overlays.
 
-Add these environment variables to the Posterizarr service:
+Open **Auto Triggers** in the Posterizarr Web UI, select **Agregarr**, and
+configure:
+
+- **Enable Agregarr callback**
+- **Agregarr URL**
+- **Agregarr API key**
+
+Use **Test connection** before saving. The API key is stored in
+`/config/agregarr_integration.json`, is never returned to the browser, and is
+written with owner-only permissions where the platform supports it.
+
+Docker environment variables can be used instead for headless deployments:
 
 ```yaml
 environment:
@@ -15,7 +26,8 @@ environment:
 
 `AGREGARR_URL` must be reachable from the Posterizarr container. The service-name
 URL above works when both containers share a Docker network. Otherwise, use the
-Agregarr server's reachable IP address and port.
+Agregarr server's reachable IP address and port. Environment variables override
+the corresponding Web UI values and make those fields read-only.
 
 The callback is sent only when all of these conditions are met:
 
