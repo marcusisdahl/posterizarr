@@ -35,10 +35,14 @@ The callback is sent only when all of these conditions are met:
 
 - Posterizarr is running in Arr trigger mode.
 - Plex integration is enabled.
-- A root movie or show poster was successfully uploaded to Plex.
+- A root movie/show poster, season poster, or episode title card was
+  successfully uploaded to Plex.
 
-Background, season, episode, and title-card uploads do not create extra
-callbacks. The one root callback carries Sonarr's season and episode numbers.
+Posterizarr sends at most one callback at the end of each completed Arr job,
+even when that job uploaded a root poster, season poster, and title card. For a
+large Sonarr import, jobs remain individual so every successfully finished
+episode has its own retryable callback; Agregarr serializes those callbacks.
+The callback carries Sonarr's season and episode numbers.
 In Agregarr, tag overlay templates with the desired artwork targets in the
 template editor: **Main poster**, **Season poster**, and/or **Episode card**.
 Existing templates default to Main poster. Episode templates should normally

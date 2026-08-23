@@ -2024,7 +2024,7 @@
       "testFailed": "Agregarr connection test failed",
       "environmentOverride": "One or more values are controlled by Docker environment variables. Overridden fields are read-only here.",
       "enableLabel": "Enable Agregarr callback",
-      "enableHelp": "Send a callback only after a root movie or show poster is uploaded successfully in Arr trigger mode.",
+      "enableHelp": "Send one callback after a completed Arr job uploads a root poster, season poster, or episode title card to Plex.",
       "urlLabel": "Agregarr URL",
       "urlHelp": "Use the Docker service name when both containers share a network, or an address reachable from this container.",
       "apiKeyLabel": "Agregarr API key",
@@ -2037,7 +2037,7 @@
       "workflowTitle": "What happens after a new item is imported",
       "workflow": [
         "Sonarr or Radarr triggers Posterizarr, which creates and uploads the selected poster to Plex.",
-        "Posterizarr sends the Plex rating key and, for Sonarr, the imported season and episode numbers after Plex confirms the root poster upload.",
+        "After each completed Arr job, Posterizarr sends one callback when Plex confirms a root or child artwork upload; Sonarr callbacks include the season and episode numbers.",
         "Agregarr adds the item to matching collections first, then applies Main, Season, and Episode-targeted overlay templates."
       ]
     },

@@ -4266,6 +4266,7 @@ function Invoke-ShowPosterCreation {
                                                     else {
                                                         Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                         Write-Entry -Subtext "$Titletext | Season Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                        $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                                     }
                                                 }
                                                 catch {
@@ -4394,6 +4395,7 @@ function Invoke-ShowPosterCreation {
                                             else {
                                                 Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                 Write-Entry -Subtext "$Titletext | Season Poster successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                             }
                                             $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                         }
@@ -5118,6 +5120,7 @@ function Invoke-TitleCardCreation {
                                                 else {
                                                     Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                     Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                    $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                                 }
                                             }
                                             catch {
@@ -5248,6 +5251,7 @@ function Invoke-TitleCardCreation {
                                         else {
                                             Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                             Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                            $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                         }
                                         $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                     }
@@ -5890,6 +5894,7 @@ function Invoke-TitleCardCreation {
                                                 else {
                                                     Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                     Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                    $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                                 }
                                             }
                                             catch {
@@ -6019,6 +6024,7 @@ function Invoke-TitleCardCreation {
                                         else {
                                             Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                             Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                            $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                         }
                                         $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                     }
@@ -6659,6 +6665,7 @@ function Invoke-TitleCardCreation {
                                                                     else {
                                                                         Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                                         Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                                        $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                                                     }
                                                                 }
                                                                 catch {
@@ -6788,6 +6795,7 @@ function Invoke-TitleCardCreation {
                                                             else {
                                                                 Write-Entry -Subtext "Upload OK: HTTP $($Upload.StatusCode)" -Path $global:configLogging -Color White -log Debug
                                                                 Write-Entry -Subtext "$Titletext | TitleCard successfully uploaded..." -Path $global:configLogging -Color Green -log Info
+                                                                $null = Increment-GlobalStat 'PlexChildArtworkUploads'
                                                             }
                                                             $global:UploadCount = Increment-GlobalStat 'UploadCount'
                                                         }
@@ -6824,4 +6832,3 @@ function Invoke-TitleCardCreation {
         $global:errorCount = Increment-GlobalStat 'errorCount'
     }
 }
-

@@ -2,6 +2,7 @@
     $global:posterCount = 0
     if ($global:runspaceStats) { $global:runspaceStats['posterCount'] = 0 }
     if ($global:runspaceStats) { $global:runspaceStats['PlexRootPosterUploads'] = 0 }
+    if ($global:runspaceStats) { $global:runspaceStats['PlexChildArtworkUploads'] = 0 }
     $arrplatform = $arrTriggers['arr_platform']
     $Mode = "arr"
     Write-Entry -Message "ArrTrigger Mode Started..." -Path $global:configLogging -Color White -log Info
@@ -1388,7 +1389,7 @@
     if (
         $UsePlex -eq 'true' -and
         $queryKey -and
-        $global:PlexRootPosterUploads -gt 0
+        ($global:PlexRootPosterUploads -gt 0 -or $global:PlexChildArtworkUploads -gt 0)
     ) {
         $agregarrMediaType = if ($arrplatform -eq 'Sonarr') { 'show' } else { 'movie' }
         $agregarrTitle = if ($arrplatform -eq 'Sonarr') { $seriesTitle } else { $movieTitle }
@@ -1409,6 +1410,5 @@
         }
         Send-AgregarrTrigger @agregarrTrigger
     }
-
 
 

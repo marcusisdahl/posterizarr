@@ -113,6 +113,7 @@ $global:runspaceStats = [hashtable]::Synchronized(@{
     errorCount = 0
     posterCount = 0
     PlexRootPosterUploads = 0
+    PlexChildArtworkUploads = 0
     FallbackCount = 0
     PosterUnknownCount = 0
     TruncatedCount = 0
