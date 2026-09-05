@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "../context/ToastContext";
+import ValidateButton from "./ValidateButton";
 import {
   Zap,
   Activity,
@@ -19,6 +22,7 @@ import {
   Check,
   Download,
   Globe,
+  Loader2,
 } from "lucide-react";
 
 // Helper function to handle robust copying to clipboard (with fallback)
@@ -576,6 +580,106 @@ function TautulliContent() {
   );
 }
 
+function AgregarrContent() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
+  const [config, setConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+
+    fetch("/api/config")
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.detail || t("autoTriggers.agregarr.loadFailed"));
+        }
+        if (active) setConfig(data.config);
+      })
+      .catch((error) => {
+        if (active) showError(error.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [showError, t]);
+
+  if (loading) {
+    return (
+      <div className="bg-theme-card border border-theme rounded-lg p-12 flex items-center justify-center gap-3 text-theme-muted">
+        <Loader2 className="w-5 h-5 animate-spin" />
+        {t("autoTriggers.agregarr.loading")}
+      </div>
+    );
+  }
+
+  const enabled = config?.AgregarrTriggerEnabled === true || String(config?.AgregarrTriggerEnabled).toLowerCase() === "true";
+  const configured = Boolean(config?.AgregarrUrl?.trim() && config?.AgregarrApiKey?.trim());
+
+  return (
+    <div className="bg-theme-card border border-theme rounded-lg p-5 sm:p-6 animate-in fade-in duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 rounded-xl bg-orange-500/10 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
+            <Server className="w-8 h-8 text-orange-400" />
+          </div>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-theme-text">{t("autoTriggers.agregarr.title")}</h2>
+            <p className="text-sm text-theme-muted mt-1 max-w-2xl">{t("autoTriggers.agregarr.description")}</p>
+          </div>
+        </div>
+        <span className={`self-start px-3 py-1 rounded-full text-xs font-semibold border ${enabled && configured ? "bg-green-500/10 text-green-400 border-green-500/30" : "bg-theme-hover text-theme-muted border-theme"}`}>
+          {enabled && configured ? t("autoTriggers.agregarr.ready") : t("autoTriggers.agregarr.notReady")}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+        {t("autoTriggers.agregarr.workflow", { returnObjects: true }).map((step, index) => (
+          <div key={step} className="bg-theme-hover border border-theme rounded-lg p-4">
+            <div className="w-7 h-7 rounded-full bg-theme-primary text-white text-sm font-bold flex items-center justify-center mb-3">
+              {index + 1}
+            </div>
+            <p className="text-sm text-theme-muted leading-relaxed">{step}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="bg-theme-hover border border-theme rounded-lg p-4 mb-5">
+        <p className="text-sm text-theme-text">{t("autoTriggers.agregarr.settingsSummary", {
+          callback: enabled ? t("autoTriggers.agregarr.enabled") : t("autoTriggers.agregarr.disabled"),
+          connection: configured ? t("autoTriggers.agregarr.configured") : t("autoTriggers.agregarr.notConfigured"),
+        })}</p>
+        <p className="text-xs text-theme-muted mt-2">{t("autoTriggers.agregarr.serverToggleHelp")}</p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+        <button
+          type="button"
+          onClick={() => navigate("/config/system")}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-theme-hover border border-theme text-theme-text hover:border-theme-primary/50"
+        >
+          <Settings className="w-4 h-4" />
+          {t("autoTriggers.agregarr.openSettings")}
+        </button>
+        <ValidateButton
+          type="agregarr"
+          config={config || {}}
+          label={t("autoTriggers.agregarr.testConnection")}
+          disabled={!configured}
+          onSuccess={showSuccess}
+          onError={showError}
+        />
+      </div>
+    </div>
+  );
+}
+
 // --- Main AutoTriggers Component ---
 function AutoTriggers() {
   const { t } = useTranslation();
@@ -585,6 +689,7 @@ function AutoTriggers() {
     { id: "tautulli", label: "Tautulli", icon: Activity, description: t("autoTriggers.tabs.tautulli.description") },
     { id: "sonarr", label: "Sonarr", icon: Tv, description: t("autoTriggers.tabs.sonarr.description") },
     { id: "radarr", label: "Radarr", icon: Film, description: t("autoTriggers.tabs.radarr.description") },
+    { id: "agregarr", label: "Agregarr", icon: Server, description: t("autoTriggers.tabs.agregarr.description") },
   ];
 
   return (
@@ -616,10 +721,11 @@ function AutoTriggers() {
 
       {/* Tabs */}
       <div className="bg-theme-card border border-theme rounded-lg p-2">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const logoMap = { tautulli: "/tautulli2.png", sonarr: "/sonarr.png", radarr: "/radarr.png" };
+            const TabIcon = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -629,7 +735,9 @@ function AutoTriggers() {
                 }`}
               >
                 <div className="flex items-center justify-center gap-3 mb-2">
-                  <img src={logoMap[tab.id]} alt={tab.label} className="w-6 h-6 object-contain" />
+                  {logoMap[tab.id]
+                    ? <img src={logoMap[tab.id]} alt={tab.label} className="w-6 h-6 object-contain" />
+                    : <TabIcon className="w-6 h-6" />}
                   <span className="font-semibold text-lg">{tab.label}</span>
                 </div>
                 <p className="text-xs opacity-80">{tab.description}</p>
@@ -641,7 +749,9 @@ function AutoTriggers() {
 
       {/* Tab Content */}
       <div className="space-y-6">
-        {activeTab === "tautulli" ? <TautulliContent /> : <ArrContent type={activeTab} />}
+        {activeTab === "tautulli" && <TautulliContent />}
+        {(activeTab === "sonarr" || activeTab === "radarr") && <ArrContent type={activeTab} />}
+        {activeTab === "agregarr" && <AgregarrContent />}
       </div>
     </div>
   );

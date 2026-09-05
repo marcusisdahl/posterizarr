@@ -6,8 +6,10 @@ adds it to matching collections, and applies its configured overlays. Sonarr
 callbacks also include the imported season and episode numbers, allowing
 Agregarr to update that season poster and episode title card.
 
-Open **Settings > System > Language & Notifications** in the Posterizarr Web
-UI and configure:
+Open **Auto Triggers > Agregarr** in the Posterizarr Web UI. The integration
+card shows the current state, tests the connection, and links to the native
+settings under **Settings > System > Language & Notifications**, where you
+configure:
 
 - **Enable Agregarr Callback**
 - **Agregarr URL**
@@ -51,10 +53,16 @@ The callback is sent only when all of these conditions are met:
 Posterizarr sends at most one callback at the end of each completed Arr job,
 even when that job uploaded a root poster, season poster, and title card. For a
 large Sonarr import, jobs remain individual so every successfully finished
-episode has its own retryable callback; Agregarr serializes those callbacks.
+episode has its own callback; Agregarr serializes those callbacks.
 The callback carries Sonarr's season and episode numbers.
 When Sonarr sends a multi-episode file in one webhook, Posterizarr expands its
 `episodes` array into one queued job per episode before processing begins.
+
+If Agregarr is busy with a full sync or its bounded callback queue is full, it
+returns a retry delay. Posterizarr honors that delay and retries for up to 15
+minutes. Authentication and configuration errors are not retried. Artwork that
+was already uploaded remains successful even if the downstream callback
+eventually fails, and the failure is recorded in Posterizarr's log.
 In Agregarr, tag overlay templates with the desired artwork targets in the
 template editor: **Main poster**, **Season poster**, and/or **Episode card**.
 Existing templates default to Main poster. Episode templates should normally
