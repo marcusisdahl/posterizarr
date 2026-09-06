@@ -16,14 +16,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-
-      - name: Test webhook expansion and validation
-        run: python -m unittest discover -s tests -p 'test_*.py'
-
       - name: Test callback retry behavior
         shell: pwsh
         run: ./tests/AgregarrCallback.Tests.ps1

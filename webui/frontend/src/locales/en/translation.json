@@ -2024,35 +2024,11 @@
       },
       "radarr": {
         "description": "Trigger on movie imports"
-      },
-      "agregarr": {
-        "description": "Run follow-up collections and overlays"
       }
     },
     "setupSteps": "Setup Steps",
     "howItWorks": "How It Works",
     "copyCode": "Copy to clipboard",
-    "agregarr": {
-      "title": "Agregarr follow-up automation",
-      "description": "Notify Agregarr after Posterizarr successfully uploads Arr-triggered artwork to Plex.",
-      "loading": "Loading Agregarr settings...",
-      "loadFailed": "Could not load Agregarr settings",
-      "ready": "Ready",
-      "notReady": "Setup required",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "configured": "Configured",
-      "notConfigured": "Missing URL or API key",
-      "settingsSummary": "Callback: {{callback}} · Connection: {{connection}}",
-      "serverToggleHelp": "Agregarr must also have Posterizarr Integration enabled in Overlay Settings. Connection testing will identify when that server-side switch is off.",
-      "openSettings": "Open integration settings",
-      "testConnection": "Test connection",
-      "workflow": [
-        "Sonarr or Radarr sends Posterizarr an import event.",
-        "Posterizarr uploads the selected root, season, or episode artwork to Plex.",
-        "Agregarr receives the completed item and updates matching collections and overlays."
-      ]
-    },
     "resources": {
       "title": "Additional Resources",
       "tautulliWiki": "Tautulli Custom Scripts Wiki",

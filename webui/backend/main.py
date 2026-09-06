@@ -68,11 +68,6 @@ except ImportError:
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from agregarr_integration import (
-    build_arr_trigger_maps,
-    classify_agregarr_validation_response,
-)
-
 # Check if running in Docker
 IS_DOCKER = (
     os.path.exists("/.dockerenv")
@@ -4434,13 +4429,46 @@ async def validate_agregarr(request: AgregarrValidationRequest):
         logger.info(f"Response received - Status: {response.status_code}")
         logger.info("=" * 60)
 
-        try:
-            response_payload = response.json()
-        except ValueError:
-            response_payload = {}
-        return classify_agregarr_validation_response(
-            response.status_code, response_payload
-        )
+        if response.status_code == 200:
+            return {
+                "valid": True,
+                "message": "Agregarr connection and API key are valid.",
+                "details": {"status_code": 200},
+            }
+        if response.status_code == 403:
+            try:
+                response_payload = response.json()
+            except ValueError:
+                response_payload = {}
+            if "integration is disabled" in str(
+                response_payload.get("error", "")
+            ).lower():
+                return {
+                    "valid": False,
+                    "message": "Agregarr is reachable, but its Posterizarr integration is disabled. Enable it in Agregarr's Overlay Settings.",
+                    "details": {
+                        "status_code": 403,
+                        "error": "integration_disabled",
+                    },
+                }
+        if response.status_code in (401, 403):
+            return {
+                "valid": False,
+                "message": "Agregarr rejected the API key.",
+                "details": {"status_code": response.status_code},
+            }
+        if response.status_code == 404:
+            return {
+                "valid": False,
+                "message": "Agregarr is reachable, but its Posterizarr integration endpoint is unavailable.",
+                "details": {"status_code": 404},
+            }
+
+        return {
+            "valid": False,
+            "message": f"Agregarr connection failed (Status: {response.status_code}).",
+            "details": {"status_code": response.status_code},
+        }
     except httpx.TimeoutException:
         logger.error("Agregarr validation timed out")
         return {
@@ -15022,9 +15050,77 @@ async def arr_webhook(request: Request):
         if event_type not in ["Download", "Import", "Grab", "MovieFileDelete", "EpisodeFileDelete"]:
             return {"success": True, "message": f"Ignored event type: {event_type}"}
 
-        try:
-            platform, trigger_maps = build_arr_trigger_maps(payload, event_type)
-        except ValueError:
+        data_map = {}
+        trigger_maps = []
+        platform = "Unknown"
+
+        # Map JSON Data to Posterizarr Arguments (mimicking ArrTrigger.sh logic)
+
+        # RADARR
+        if "movie" in payload:
+            platform = "Radarr"
+            movie = payload.get("movie", {})
+            movie_file = payload.get("movieFile", {})
+
+            data_map["arr_platform"] = platform
+            data_map["event"] = event_type
+            data_map["arr_movie_title"] = movie.get("title", "")
+            data_map["arr_movie_tmdb"] = movie.get("tmdbId", "")
+            data_map["arr_movie_imdb"] = movie.get("imdbId", "")
+            data_map["arr_movie_year"] = movie.get("year", "")
+            data_map["arr_movie_path"] = movie.get("folderPath", "")
+
+            # For downloads/upgrades, get specific file info
+            if movie_file:
+                data_map["arr_moviefile_path"] = movie_file.get("path", "")
+                data_map["arr_moviefile_id"] = movie_file.get("id", "")
+
+            trigger_maps.append(data_map)
+
+        # SONARR
+        elif "series" in payload:
+            platform = "Sonarr"
+            series = payload.get("series", {})
+            episodes = payload.get("episodes", [])
+
+            data_map["arr_platform"] = platform
+            data_map["event"] = event_type
+            data_map["arr_series_title"] = series.get("title", "")
+            data_map["arr_series_tvdb"] = series.get("tvdbId", "")
+            data_map["arr_series_path"] = series.get("path", "")
+
+            # Sonarr webhooks don't always send IMDB/TMDB in the main payload
+            if "imdbId" in series:
+                data_map["arr_series_imdb"] = series.get("imdbId")
+
+            # Queue every episode represented by this Sonarr event. Multi-episode
+            # files legitimately contain more than one entry here; keeping only
+            # the first silently skipped the remaining title cards and callbacks.
+            if episodes:
+                for episode in episodes:
+                    episode_map = dict(data_map)
+                    episode_map["arr_episode_season"] = episode.get(
+                        "seasonNumber", ""
+                    )
+                    episode_map["arr_episode_numbers"] = episode.get(
+                        "episodeNumber", ""
+                    )
+                    episode_map["arr_episode_titles"] = episode.get("title", "")
+
+                    # A multi-episode file shares this path across its episodes.
+                    if "episodeFile" in payload:
+                        episode_map["arr_episode_path"] = payload["episodeFile"].get(
+                            "path", ""
+                        )
+                    trigger_maps.append(episode_map)
+            else:
+                if "episodeFile" in payload:
+                    data_map["arr_episode_path"] = payload["episodeFile"].get(
+                        "path", ""
+                    )
+                trigger_maps.append(data_map)
+
+        else:
             logger.warning(f"Unknown payload format received: {payload.keys()}")
             raise HTTPException(status_code=400, detail="Unknown payload format")
 

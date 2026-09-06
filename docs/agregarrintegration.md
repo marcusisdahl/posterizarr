@@ -6,18 +6,12 @@ adds it to matching collections, and applies its configured overlays. Sonarr
 callbacks also include the imported season and episode numbers, allowing
 Agregarr to update that season poster and episode title card.
 
-Open **Auto Triggers > Agregarr** in the Posterizarr Web UI. The integration
-card shows the current state, tests the connection, and links to the native
-settings under **Settings > System > Language & Notifications**, where you
-configure:
+Open **Settings > System > Language & Notifications** in the Posterizarr Web
+UI and configure:
 
 - **Enable Agregarr Callback**
 - **Agregarr URL**
 - **Agregarr API Key**
-
-Use **Test** beside the URL to verify that Posterizarr can reach Agregarr
-and authenticate. The test reads Agregarr's integration status and does not
-queue collection or overlay work.
 
 These settings use Posterizarr's central `config.json` configuration. They can
 also be edited directly under the existing `Notification` section:
